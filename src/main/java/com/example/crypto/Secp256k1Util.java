@@ -133,6 +133,7 @@ public class Secp256k1Util {
 
     public static void main(String[] args) {
         try {
+            System.out.println("Secp256k1Util");
             // 키 쌍 생성 테스트
             StringBuffer publicKey = new StringBuffer();
             StringBuffer privateKey = new StringBuffer();

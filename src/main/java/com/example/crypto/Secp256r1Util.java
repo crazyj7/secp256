@@ -63,6 +63,9 @@ public class Secp256r1Util {
 
     // 서명 생성
     public static String sign(String message, String privateKeyHex) throws Exception {
+
+        System.out.println("Secp256r1Util");
+        
         byte[] privateKeyBytes = hexStringToByteArray(privateKeyHex);
         byte[] messageBytes = message.getBytes();
 
