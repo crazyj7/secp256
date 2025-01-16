@@ -131,6 +131,27 @@ public class Secp256k1Util {
         return verifier.verifySignature(messageHash, new BigInteger(1, r), new BigInteger(1, s));
     }
 
+    
+
+        // 내부 헬퍼 메소드들...
+        private static String bytesToHex(byte[] bytes) {
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b & 0xff));
+            }
+            return sb.toString();
+        }
+    
+        private static byte[] hexToBytes(String hex) {
+            int len = hex.length();
+            byte[] data = new byte[len / 2];
+            for (int i = 0; i < len; i += 2) {
+                data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                                   + Character.digit(hex.charAt(i+1), 16));
+            }
+            return data;
+        }
+
     public static void main(String[] args) {
         try {
             System.out.println("Secp256k1Util");
@@ -154,6 +175,40 @@ public class Secp256k1Util {
             // 잘못된 메시지로 검증 테스트
             boolean isInvalid = verify("Wrong message", signature, publicKey.toString());
             System.out.println("Invalid Signature Test: " + isInvalid);
+
+
+
+
+            
+            //////////////////////////////////////////////////////////////////////////////////
+            // test2
+            publicKey.setLength(0);
+            privateKey.setLength(0);
+            publicKey.append("03b52244777339044642b540520a855445f21a8835152744f022960b5e8e16c278");
+            privateKey.append("6700a4648f9fdc68f98d262a75e91be2c0e746e3328d606d854330d3e6c9ea6a");
+
+            // message
+            message = "Uap3XXAVpoaJShJNVOJC";
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(message.getBytes());
+            String messageHash = bytesToHex(hash).toLowerCase();
+            System.out.println("Message: " + message);
+
+            signature = sign(message, privateKey.toString());
+            System.out.println("Signature: " + signature + " (length: " + signature.length() + ")");
+            isValid = verify(message, signature, publicKey.toString());
+            System.out.println("Signature Valid: " + isValid);
+
+
+            System.out.println("Message Hash: " + messageHash);
+    
+            signature = sign(messageHash, privateKey.toString());
+            System.out.println("Signature: " + signature + " (length: " + signature.length() + ")");
+            // e8f33081301d6f0010503eeba669955aae4822eebfc95502236e9d0221b63aa47730c361c8a02678d14055b16cf4e2c8d02b80c7321024ad8876841b7b73f6d5
+            // 3e2e4d145eed8bdf93abf03264791e422993381e4d1c671ee50eae2746c3dc5b2445507d8ef320cf16011717ae14980fc8055e08827b34ba8c12c971f62d17d9
+            isValid = verify(message, signature, publicKey.toString());
+            System.out.println("Signature Valid: " + isValid);
+
 
         } catch (Exception e) {
             e.printStackTrace();

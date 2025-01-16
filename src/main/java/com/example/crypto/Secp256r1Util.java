@@ -65,7 +65,7 @@ public class Secp256r1Util {
     public static String sign(String message, String privateKeyHex) throws Exception {
 
         byte[] privateKeyBytes = hexStringToByteArray(privateKeyHex);
-        byte[] messageBytes = message.getBytes();
+        byte[] messageBytes = message.getBytes("UTF-8");
 
         // SHA-256 해시 계산
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -99,7 +99,7 @@ public class Secp256r1Util {
     public static boolean verify(String message, String signatureHex, String publicKeyHex) throws Exception {
         byte[] publicKeyBytes = hexStringToByteArray(publicKeyHex);
         byte[] signatureBytes = hexStringToByteArray(signatureHex);
-        byte[] messageBytes = message.getBytes();
+        byte[] messageBytes = message.getBytes("UTF-8");
 
         // 메시지 해시 계산
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -119,6 +119,28 @@ public class Secp256r1Util {
 
         return verifier.verifySignature(messageHash, new BigInteger(1, r), new BigInteger(1, s));
     }
+
+
+
+        // 내부 헬퍼 메소드들...
+        private static String bytesToHex(byte[] bytes) {
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b & 0xff));
+            }
+            return sb.toString();
+        }
+    
+        private static byte[] hexToBytes(String hex) {
+            int len = hex.length();
+            byte[] data = new byte[len / 2];
+            for (int i = 0; i < len; i += 2) {
+                data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                                   + Character.digit(hex.charAt(i+1), 16));
+            }
+            return data;
+        }
+    
 
     public static void main(String[] args) {
         try {
@@ -143,6 +165,42 @@ public class Secp256r1Util {
             // 잘못된 메시지로 검증 테스트
             boolean isInvalid = verify("Wrong message", signature, publicKey.toString());
             System.out.println("Invalid Signature Test: " + isInvalid);
+
+
+            //////////////////////////////////////////////////////////////////////////////////
+            // test2
+            publicKey.setLength(0);
+            privateKey.setLength(0);
+            publicKey.append("03b52244777339044642b540520a855445f21a8835152744f022960b5e8e16c278");
+            privateKey.append("6700a4648f9fdc68f98d262a75e91be2c0e746e3328d606d854330d3e6c9ea6a");
+  
+            System.out.println("--------------------------------");
+            System.out.println("Private Key: " + privateKey.toString() + " (length: " + privateKey.length() + ")");
+            System.out.println("Public Key: " + publicKey.toString() + " (length: " + publicKey.length() + ")");
+
+            // message
+            message = "TEST-qDIWUzzIj2LfOLuD42A2";
+            System.out.println("Message: " + message);
+            // 이 모듈은 sha256 해시를 할 필요없음. sign 내부에서 처리함. 
+
+            // 서명할 때 마다 값이 달라진다!!! 
+            signature = sign(message, privateKey.toString());
+            System.out.println("Signature: " + signature + " (length: " + signature.length() + ")");
+            isValid = verify(message, signature, publicKey.toString());
+            System.out.println("Signature Valid: " + isValid);
+
+            signature = sign(message, privateKey.toString());
+            System.out.println("Signature: " + signature + " (length: " + signature.length() + ")");
+            isValid = verify(message, signature, publicKey.toString());
+            System.out.println("Signature Valid: " + isValid);
+
+            // 서명값을 변경해서 검증 테스트. 
+            signature="ae31bcff29ae91868d4f3d1298be9e2aa163df7fe299c5e2fd7a5b2067b5fa29a0517be1c6990bcb7bf09e4a0baf6414108afb50859c6af37b0d0912120f494d" ;
+            System.out.println("signature change to:"+signature);
+
+            isValid = verify(message, signature, publicKey.toString());
+            System.out.println("Signature Valid: " + isValid);
+            System.out.println("--------------------------------");
 
         } catch (Exception e) {
             e.printStackTrace();
