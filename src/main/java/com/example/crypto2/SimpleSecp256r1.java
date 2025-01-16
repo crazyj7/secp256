@@ -1,4 +1,3 @@
-//package com.secuve.secusignec.util ;
 package com.example.crypto2;
 
 import java.security.MessageDigest;
